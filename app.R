@@ -4,41 +4,93 @@
 #
 
 library(shiny)
+library(costTools)
+library(DT)
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
+service <- c("Any", "Army", "Navy", "Marine", "DoD")
+viewIndex()
+
+# Define UI
+ui <- fluidPage(theme = "technomics.css",
    
    # Application title
-   titlePanel("Old Faithful Geyser Data"),
+   titlePanel("Joint Inflation Calculator"),
    
-   # Sidebar with a slider input for number of bins 
-   sidebarLayout(
-      sidebarPanel(
-         sliderInput("bins",
-                     "Number of bins:",
-                     min = 1,
-                     max = 50,
-                     value = 30)
-      ),
-      
-      # Show a plot of the generated distribution
-      mainPanel(
-         plotOutput("distPlot")
-      )
+   fluidRow(
+     column(4,
+            h3("Basic Options"),
+            wellPanel(
+              h4("Select Index"),
+              selectInput("service",
+                          "Service:",
+                          choice = service,
+                          selected = "Any"),
+              selectInput("index",
+                          "Index Options:",
+                          choice = NULL)
+              
+            )
+            
+            ),
+     column(8,
+            h3("Query Results"),
+            wellPanel(
+              h4(textOutput("longname")),
+              dataTableOutput("table")
+              
+            )
+            
+            
+            )
    )
+
+   
+   
 )
 
-# Define server logic required to draw a histogram
-server <- function(input, output) {
-   
-   output$distPlot <- renderPlot({
-      # generate bins based on input$bins from ui.R
-      x    <- faithful[, 2] 
-      bins <- seq(min(x), max(x), length.out = input$bins + 1)
-      
-      # draw the histogram with the specified number of bins
-      hist(x, breaks = bins, col = 'darkgray', border = 'white')
-   })
+# Define Server
+server <- function(input, output, session) {
+  
+  #makeReactiveBinding("indexData")
+  
+  newIndexData <- reactive({
+    
+    indexData <- getIndex(input$index)
+    
+    return(indexData)
+    
+  })
+  
+  observe({
+    updateSelectInput(session,
+                      "index",
+                      choice = viewIndex(input$service)$ShortTitle)
+  })
+  
+  
+  
+  output$table <- renderDataTable({
+    
+    indexData <- newIndexData()
+    
+    # DataTable Options:
+    # t = table
+    # p = pagination
+    # l = length changing
+    # order specifies top or bottom (relative to t)
+    dt <- datatable(indexData, options = list(dom = 'ltlp'), rownames= FALSE) %>%
+      formatRound(columns = c("Annual", "Outlay", "Raw", "Weighted"), digits = 3)
+    
+    return(dt)
+  })
+  
+  output$longname <- renderText({
+    
+    indexData <- newIndexData()
+    
+    return(attr(indexData, "metadata")$LongTitle)
+  })
+  
 }
 
 # Run the application 
