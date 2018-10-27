@@ -1,0 +1,68 @@
+
+h1 {
+  font: 'Helvetica';
+  font-size: 300%;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #4b4b4b;
+}
+
+h2 {
+  font: 'Arial';
+  font-size: 200%;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #123939;
+}
+
+h3 {
+  font: 'Arial';
+  font-size: 150%;
+  font-weight: 750;
+  line-height: 1.1;
+  color: #00a0b2;
+}
+
+h4 {
+  font: 'Arial';
+  font-size: 125%;
+  font-weight: 650;
+  line-height: 1.1;
+  color: #2B8686;
+}
+
+h5 {
+  font: 'Arial';
+  font-size: 100%;
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.1;
+  color: #4b4b4b;
+}
+
+.well {
+  background-color: #eeeeee;
+}
+
+label {
+  font-size: 85%;
+  color: #4b4b4b;
+}
+
+.dygraph-title {
+  color: #4b4b4b;
+  font-weight: bold;
+}
+
+.irs-bar {
+  border-top-color: #00a0b2;
+  border-bottom-color: #00a0b2;
+} 
+
+.irs-single, .irs-bar-edge, .irs-bar {
+  background: #00a0b2;
+}
+
+.irs-bar-edge {
+  border-color: #00a0b2;
+}
