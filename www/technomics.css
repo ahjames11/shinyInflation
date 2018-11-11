@@ -59,7 +59,7 @@ label {
   border-bottom-color: #00a0b2;
 } 
 
-.irs-single, .irs-bar-edge, .irs-bar {
+.irs-single, .irs-bar-edge, .irs-bar, .irs-from, .irs-to {
   background: #00a0b2;
 }
 

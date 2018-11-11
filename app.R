@@ -7,8 +7,8 @@ library(shiny)
 library(costTools)
 library(DT)
 
-service <- c("Any", "Army", "Navy", "Marine", "DoD")
-viewIndex()
+service <- c("All", "Army", "Navy", "Marine", "DoD")
+
 
 # Define UI
 ui <- fluidPage(theme = "technomics.css",
@@ -24,11 +24,18 @@ ui <- fluidPage(theme = "technomics.css",
               selectInput("service",
                           "Service:",
                           choice = service,
-                          selected = "Any"),
+                          selected = "All"),
               selectInput("index",
                           "Index:",
-                          "Index Options:",
-                          choice = NULL)
+                          choice = NULL),
+              sliderInput("daterange",
+                          "Date Range:",
+                          min = 1900,
+                          max = 2100,
+                          value = c(1900, 2100),
+                          step = 1,
+                          sep = ""
+                          )
               
             )
             
@@ -38,8 +45,7 @@ ui <- fluidPage(theme = "technomics.css",
             wellPanel(
               h4(textOutput("longname")),
               dataTableOutput("table")
-              
-            )
+              )
             
             
             )
@@ -66,13 +72,23 @@ server <- function(input, output, session) {
     updateSelectInput(session,
                       "index",
                       choice = viewIndex(input$service)$ShortTitle)
+    
+    indexData <- newIndexData()
+    
+    updateSliderInput(session,
+                      "daterange",
+                      min = min(indexData$Year),
+                      max = max(indexData$Year))
+    
   })
   
   
   
   output$table <- renderDataTable({
     
-    indexData <- newIndexData()
+    indexData <- newIndexData() %>%
+      select(-FYStart, -FYEnd) %>%
+      filter(Year >= input$daterange[1], Year <= input$daterange[2])
     
     # DataTable Options:
     # t = table
