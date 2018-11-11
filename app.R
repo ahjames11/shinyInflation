@@ -20,13 +20,14 @@ ui <- fluidPage(theme = "technomics.css",
      column(4,
             h3("Basic Options"),
             wellPanel(
-              h4("Index Options"),
+              h4("Select Index"),
               selectInput("service",
                           "Service:",
                           choice = service,
                           selected = "Any"),
               selectInput("index",
                           "Index:",
+                          "Index Options:",
                           choice = NULL)
               
             )
