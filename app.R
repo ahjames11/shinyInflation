@@ -7,18 +7,22 @@ library(shiny)
 library(costTools)
 library(DT)
 
-service <- c("All", "Army", "Navy", "Marine", "DoD")
+library(dygraphs)
+library(xts)
+library(tbl2xts)
 
+service <- c("All", "Army", "Navy", "Marine", "DoD")
 
 # Define UI
 ui <- fluidPage(theme = "technomics.css",
    
    # Application title
    titlePanel("Joint Inflation Calculator"),
+   h5(paste0("Data Version: ", viewVersion())),
    
    fluidRow(
      column(4,
-            h3("Basic Options"),
+            #h3("Basic Options"),
             wellPanel(
               h4("Select Index"),
               selectInput("service",
@@ -28,26 +32,25 @@ ui <- fluidPage(theme = "technomics.css",
               selectInput("index",
                           "Index:",
                           choice = NULL),
-              sliderInput("daterange",
-                          "Date Range:",
-                          min = 1900,
-                          max = 2100,
-                          value = c(1900, 2100),
-                          step = 1,
-                          sep = ""
-                          )
-              
+              br(),
+              numericInput("baseyear",
+                           "Base Year:",
+                           2018,
+                           min = 1900,
+                           max = 2100,
+                           step = 1)
             )
             
             ),
      column(8,
-            h3("Query Results"),
+            #h3("Query Results"),
             wellPanel(
-              h4(textOutput("longname")),
+              #h4(textOutput("longname")),
+              dygraphOutput("graphic", height = "300px")
+              ),
+            wellPanel(
               dataTableOutput("table")
-              )
-            
-            
+            )
             )
    )
 
@@ -62,43 +65,57 @@ server <- function(input, output, session) {
   
   newIndexData <- reactive({
     
-    indexData <- getIndex(input$index)
+    indexData <- getIndex(input$index, Base = input$baseyear)
     
     return(indexData)
     
   })
   
   observe({
+    
+    service <- input$service
+    
     updateSelectInput(session,
                       "index",
-                      choice = viewIndex(input$service)$ShortTitle)
-    
-    indexData <- newIndexData()
-    
-    updateSliderInput(session,
-                      "daterange",
-                      min = min(indexData$Year),
-                      max = max(indexData$Year))
+                      choice = viewIndex(service)$ShortTitle)
     
   })
   
-  
-  
-  output$table <- renderDataTable({
+  output$table <- renderDataTable(server = FALSE, {
+    # server = FALSE has Buttons return all data, not just visible
     
     indexData <- newIndexData() %>%
-      select(-FYStart, -FYEnd) %>%
-      filter(Year >= input$daterange[1], Year <= input$daterange[2])
+      select(-FYStart, -FYEnd)
     
     # DataTable Options:
     # t = table
     # p = pagination
     # l = length changing
     # order specifies top or bottom (relative to t)
-    dt <- datatable(indexData, options = list(dom = 'ltlp'), rownames= FALSE) %>%
+    dt <- datatable(indexData,
+                    extensions = "Buttons",
+                    options = list(dom = 'Btlp', ordering = F, buttons = c('copy', 'csv', 'excel'), pageLength = 10),
+                    rownames= FALSE) %>%
       formatRound(columns = c("Annual", "Outlay", "Raw", "Weighted"), digits = 3)
     
     return(dt)
+  })
+  
+  output$graphic <- renderDygraph({
+    
+    indexData <- newIndexData()
+    
+    d <- indexData %>%
+      ungroup() %>%
+      select(FYStart, Raw, Weighted) %>%
+      rename(Date = FYStart) %>%
+      tbl_xts()
+    
+    p <- dygraph(d, main = attr(indexData, "metadata")$LongTitle) %>%
+      dySeries("Raw", label = "Raw Index") %>%
+      dySeries("Weighted", label = "Weighted Index")
+    
+    return(p)
   })
   
   output$longname <- renderText({
@@ -112,4 +129,5 @@ server <- function(input, output, session) {
 
 # Run the application 
 shinyApp(ui = ui, server = server)
+
 
