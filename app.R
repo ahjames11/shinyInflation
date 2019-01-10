@@ -1,7 +1,4 @@
-#
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
+## Shiny Application to view Inflation data from the Joint Inflation Calculator (through CostTools)
 
 library(shiny)
 library(costTools)
