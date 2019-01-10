@@ -8,6 +8,8 @@ library(dygraphs)
 library(xts)
 library(tbl2xts)
 
+library(dplyr)
+
 service <- c("All", "Army", "Navy", "Marine", "DoD")
 
 # Define UI
