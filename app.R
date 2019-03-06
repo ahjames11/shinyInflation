@@ -3,6 +3,7 @@
 library(shiny)
 library(costTools)
 library(DT)
+library(dplyr)
 
 library(dygraphs)
 library(xts)
