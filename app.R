@@ -4,6 +4,7 @@ library(shiny)
 library(costTools)
 library(DT)
 library(dplyr)
+library(tidyr)
 
 library(dygraphs)
 library(xts)
@@ -12,6 +13,34 @@ library(tbl2xts)
 library(dplyr)
 
 service <- c("All", "Army", "Navy", "Marine", "DoD")
+
+# Function to extrapolate an index (to move into costTools)
+extrapIndex <- function(SingleIndex, Extrap_End = 2060) {
+  
+  base_year <- attr(SingleIndex, 'metadata')$Base
+
+  dat <- SingleIndex %>%
+    ungroup() %>%
+    add_row(Year = seq.int(max(.$Year) + 1, Extrap_End)) %>%
+    fill(ID, ShortTitle, Annual, Outlay) %>%
+    mutate(Raw = cumprod(Annual))
+  
+  raw_val <- dat %>%
+    filter(Year == base_year) %>%
+    select(Raw) %>%
+    pull()
+  
+  dat <- dat %>%
+    mutate(Raw = Raw / raw_val,
+           Weighted = Raw * Outlay,
+           FYStart = CalYear_GovFY(Year)[[1]],
+           FYEnd = CalYear_GovFY(Year)[[2]])
+  
+  # mostattributes(dat) <- attributes(SingleIndex)
+  
+  return(dat)
+}
+
 
 # Define UI
 ui <- fluidPage(theme = "technomics.css",
@@ -65,7 +94,7 @@ server <- function(input, output, session) {
   
   newIndexData <- reactive({
     
-    indexData <- getIndex(input$index, Base = input$baseyear)
+    indexData <- extrapIndex(getIndex(input$index, Base = input$baseyear))
     
     return(indexData)
     
