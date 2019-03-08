@@ -121,6 +121,7 @@ server <- function(input, output, session) {
     # p = pagination
     # l = length changing
     # order specifies top or bottom (relative to t)
+    # note: may not render correctly in RStudio browswer - open in an external browser
     dt <- datatable(indexData,
                     extensions = "Buttons",
                     options = list(dom = 'Btlp', ordering = F, buttons = c('copy', 'csv', 'excel'), pageLength = 10),
